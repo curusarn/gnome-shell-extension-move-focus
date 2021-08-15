@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+    <schema id="org.gnome.shell.extensions.movefocus" path="/org/gnome/shell/extensions/movefocus/">
+        <key name="move-focus-left" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Move focus to window on left</summary>
+        </key>
+        <key name="move-focus-right" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Move focus to window on right</summary>
+        </key>
+        <key name="switch-to-new-workspace-down" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Insert new workspace down and switch to it</summary>
+        </key>
+        <key name="move-to-new-workspace-down" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Move window to new workspace down (and focus it)</summary>
+        </key>
+        <key name="move-to-workspace-up-anywhere" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Move window to workspace up (but it also works in overview)</summary>
+        </key>
+        <key name="move-to-workspace-down-anywhere" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Move window to workspace down (but it also works in overview)</summary>
+        </key>
+    </schema>
+</schemalist>

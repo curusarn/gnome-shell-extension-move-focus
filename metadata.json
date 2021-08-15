@@ -1,0 +1,10 @@
+{
+  "name": "Move Focus",
+  "description": "Move focus between windows",
+  "uuid": "movefocus@simonlet.cz",
+  "shell-version": [
+    "40"
+  ],
+  "gettext-domain": "movefocus@simonlet.cz",
+  "settings-schema": "org.gnome.shell.extensions.movefocus"
+}
