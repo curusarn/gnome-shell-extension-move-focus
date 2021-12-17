@@ -1,4 +1,3 @@
-
 all:
 	####### restart #######
 	make restart
@@ -7,8 +6,8 @@ all:
 	make gsettings
 
 restart:
-	glib-compile-schemas schemas
-	restart-gnome-shell
+	make schemas
+	scripts/restart-gnome-shell
 
 schema_mf := schemas
 gsettings:
@@ -20,3 +19,11 @@ gsettings:
 	gsettings --schemadir ${schema_mf} set org.gnome.shell.extensions.movefocus move-to-workspace-down-anywhere "['<Super><Shift>j']"
 	#"['<Super><Shift>k', '<Super><Shift>up']"
 	#"['<Super><Shift>j', '<Super><Shift>down']"
+
+schemas:
+	glib-compile-schemas schemas
+
+zip:
+	make schemas
+	zip .
+	#TODO
