@@ -18,10 +18,16 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.movefocus");
 
+// Debug log
+const Debug = 0
+function dbglog(msg) {
+    if (Debug == 1) {
+        log(msg)
+    }
+}
+
 // You can import your modules using the extension object we imported as `Me`.
 // const ExampleLib = Me.imports.exampleLib;
-
-/* exported init */
 
 class MoveFocusExtension {
     constructor() {
@@ -74,17 +80,14 @@ class MoveFocusExtension {
     handler_move_to_new_workspace(display, direction_is_up) {
         var window = display.get_focus_window();
         if (window === null) {
-            log(`[MOVE-FOCUS]: Can't move window - no window focused`);
+            dbglog(`[MOVE-FOCUS]: Can't move window - no window focused`);
             return
         }
         var wm = display.get_workspace_manager();
         var ts = display.get_current_time();
         var current_wspc_idx = wm.get_active_workspace_index();
 
-        var direction = 1;
-        if (direction_is_up) {
-            direction = 0;
-        }
+        var direction = direction_is_up ? 0 : 1;
 
         var target_wspc = this.insert_new_workspace(wm, current_wspc_idx + direction);
         window.change_workspace(target_wspc);
@@ -93,31 +96,35 @@ class MoveFocusExtension {
     }
 
     get_cmp_func(reverse) {
-        // we could do more advanced comparison where difference in X that is less than N doesn't count
-        // minimal number of pixels that is considered different
+        // we ignore differences smaller than "epsilon" 
         // reasoning is that a few pixels is something that human doesn't notice
         // so our ordering ignores it to make the ordering more predictable/natural
+        // this is ofcourse heavily opinionated just like rest of this extension
         const epsilon = 15;
-        var reverse_coef = 1;
-        if (reverse) {
-            reverse_coef = -1;
-        }
+        var reverse_coef = reverse ? -1 : 1;
         return function(a, b) {
-            const aa = a.get_buffer_rect();
-            const bb = b.get_buffer_rect();
-            if (Math.abs(aa.x - bb.x) > epsilon) {
-                return (aa.x - bb.x) * reverse_coef;
-            }
-            if (Math.abs(aa.y - bb.y) > epsilon) {
-                return (aa.y - bb.y) * reverse_coef;
-            }
-            if (Math.abs(aa.width - bb.width) > epsilon) {
-                return (aa.width - bb.width) * -1 * reverse_coef;
-            }
-            if (Math.abs(aa.height - bb.height) > epsilon) {
-                return (aa.height - bb.height) * -1 * reverse_coef;
-            }
-            return a.get_stable_sequence() - b.get_stable_sequence();
+            return function(){
+                const aa = a.get_buffer_rect();
+                const bb = b.get_buffer_rect();
+                // from left to right
+                if (Math.abs(aa.x - bb.x) > epsilon) {
+                    return (aa.x - bb.x);
+                }
+                // from top to bottom
+                if (Math.abs(aa.y - bb.y) > epsilon) {
+                    return (aa.y - bb.y);
+                }
+                // from wide to narrow
+                if (Math.abs(aa.width - bb.width) > epsilon) {
+                    return (aa.width - bb.width) * -1;
+                }
+                // from tall to short
+                if (Math.abs(aa.height - bb.height) > epsilon) {
+                    return (aa.height - bb.height) * -1;
+                }
+                // stable sequence provided by GNOME Shell
+                return (a.get_stable_sequence() - b.get_stable_sequence());
+            }() * reverse_coef;
         };
     }
 
@@ -139,10 +146,10 @@ class MoveFocusExtension {
         if (current_window === null) {
             if (direction_is_left) {
                 current_window = this.create_fake_window(Number.MAX_VALUE);
-                log(`[MOVE-FOCUS]: Focusing rightmost window`);
+                dbglog(`[MOVE-FOCUS]: Focusing rightmost window`);
             } else {
                 current_window = this.create_fake_window(Number.MIN_VALUE);
-                log(`[MOVE-FOCUS]: Focusing leftmost window`);
+                dbglog(`[MOVE-FOCUS]: Focusing leftmost window`);
             }
         }
         return windows.find(x => cmp(x, current_window) > 0);
@@ -169,7 +176,7 @@ class MoveFocusExtension {
         if (current_window !== null) {
             current_window_id = current_window.get_id();
         }
-        log(`[MOVE-FOCUS]: Window focused (${current_window_id} -> ${target_window.get_id()})`);
+        dbglog(`[MOVE-FOCUS]: Window focused (${current_window_id} -> ${target_window.get_id()})`);
         var ts = display.get_current_time();
         target_window.activate(ts);
         target_window.raise();
@@ -182,24 +189,21 @@ class MoveFocusExtension {
         return this.handler_move_to_workspace(display, false);
     }
     handler_move_to_workspace(display, direction_is_up) {
-        log(`[MOVE-FOCUS]: move-to-workspace`);
+        dbglog(`[MOVE-FOCUS]: move-to-workspace`);
         var window = display.get_focus_window();
         if (window === null) {
-            log(`[MOVE-FOCUS]: Can't move window - no window focused`);
+            dbglog(`[MOVE-FOCUS]: Can't move window - no window focused`);
             return
         }
         var wm = display.get_workspace_manager();
         var ts = display.get_current_time();
         var current_wspc_idx = wm.get_active_workspace_index();
 
-        var direction = 1;
-        if (direction_is_up) {
-            direction = -1;
-        }
+        var direction = direction_is_up ? -1 : 1;
         var target_wspc_idx = current_wspc_idx + direction;
         var target_wspc = wm.get_workspace_by_index(target_wspc_idx);
         if (target_wspc_idx === -1) {
-            log(`[MOVE-FOCUS]: No workspace with index -1 - creating`);
+            dbglog(`[MOVE-FOCUS]: No workspace with index -1 - creating`);
             target_wspc = this.insert_new_workspace(wm, 0);
         }
 
