@@ -1,13 +1,10 @@
 all:
 	####### restart #######
-	make restart
+	make schemas
+	echo "Run 'Alt+F2 > r' (the automated way no longer works for some reason)"
 	
 	###### gsettings ######
 	make gsettings
-
-restart:
-	make schemas
-	scripts/restart-gnome-shell
 
 schema_mf := schemas
 gsettings:
@@ -23,7 +20,3 @@ gsettings:
 schemas:
 	glib-compile-schemas schemas
 
-zip:
-	make schemas
-	zip .
-	#TODO
